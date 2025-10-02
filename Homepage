@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manna's Beacon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Font Awesome for Social Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        /* Sticky Shrinking Header */
+        .sticky-header {
+            background: rgba(255,255,255,0.95);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            z-index: 9999; /* Lower than sidepanel */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+        .company-title {
+            font-family: 'Cooper Black', serif;
+            color: darkblue;
+            font-size: 48px;
+            font-weight: bold;
+            margin: 0;
+            padding: 18px 0 10px 0;
+            transition: font-size 0.3s, padding 0.3s;
+            text-align: center;
+        }
+        .company-title.small {
+            font-size: 28px;
+            padding: 5px 0 5px 0;
+        }
+        .menu-btn-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .openbtn {
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #111;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            transition: left 0.3s, top 0.3s, transform 0.3s;
+            z-index: 10001;
+        }
+        .openbtn.shrink {
+            left: 12px;
+            top: 12px;
+            transform: none;
+            font-size: 24px;
+            padding: 6px 12px;
+        }
+        .marquee-wrapper {
+            width: 100%;
+            transition: opacity 0.3s, max-height 0.3s;
+            overflow: hidden;
+            max-height: 50px;
+            opacity: 1;
+        }
+        .marquee-wrapper.hide {
+            opacity: 0;
+            max-height: 0;
+            pointer-events: none;
+        }
+        .sticky-spacer {
+            height: 105px;
+        }
+
+        /* Social Icons */
+        .fa {
+            padding: 15px;
+            font-size: 20px;
+            width: 60px;
+            text-align: center;
+            text-decoration: none;
+            margin: 5px 2px;
+        }
+        .fa:hover { opacity: 0.7; }
+        .fa-facebook { background: #3B5998; color: white; }
+        .fa-twitter { background: #55ACEE; color: white; }
+        .fa-linkedin { background: #007bb5; color: white; }
+        .fa-instagram { background: #125688; color: white; }
+
+        body {
+            background-image: url('https://images.unsplash.com/photo-1569982175971-d92b01cf8694?auto=format&fit=crop&q=80&w=1470&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-color: #f0f0f0;
+            color: #333;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: left;
+        }
+        #header { position: relative; overflow: hidden; }
+        .header-image { width: 100%; display: none; }
+
+        /* Sidepanel (menu) - fix: z-index higher, covers header */
+        .sidepanel {
+            width: 0;
+            position: fixed;
+            z-index: 20000; /* Must be greater than .sticky-header */
+            height: 100vh;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+        .sidepanel a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidepanel a:hover { color: #f1f1f1; }
+        .sidepanel .closebtn {
+            position: absolute;
+            top: 0;
+            right: 18px;
+            font-size: 36px;
+            z-index: 20001; /* Ensure it is on top */
+            color: white;
+        }
+
+        /* Dropdown Menu - Align right */
+        .menu {
+            margin: 10px 0;
+            display: flex;
+            justify-content: flex-end; /* Align right */
+            align-items: center;
+            gap: 12px;
+        }
+        .dropdown {
+            display: inline-block;
+            position: relative;
+        }
+        .dropdown-button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover { background-color: #ddd; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content li { list-style: none; padding: 0; margin: 0; }
+
+        .main { max-width: 1000px; margin: auto; }
+        .row { margin: 8px -16px; }
+        .row, .row > .column { padding: 8px; }
+        .column { float: left; width: 25%; }
+        .row:after { content: ""; display: table; clear: both; }
+        .content { background-color: white; padding: 10px; }
+        @media screen and (max-width: 900px) {
+            .column { width: 50%; }
+            .menu { flex-direction: column; align-items: flex-end; }
+        }
+        @media screen and (max-width: 600px) {
+            .column { width: 100%; }
+            .menu { flex-direction: column; align-items: flex-end; }
+        }
+        .read-more-content { display: none; }
+        .read-more-button { margin-top: 8px; background: #3498db; color: #fff; border: none; border-radius: 5px; padding: 6px 14px; cursor: pointer; font-size: 15px; }
+        .read-more-button.active { background: #1b5e9b; }
+        .scrolling-text {
+            white-space: nowrap;
+            overflow: hidden;
+            animation: scroll-left 30s linear infinite;
+        }
+        @keyframes scroll-left {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        footer {
+            background: #eee;
+            padding: 16px 0 0 0;
+            font-size: 15px;
+            color: #333;
+        }
+        footer .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        footer .column {
+            flex: 1 1 30%;
+            padding: 16px;
+        }
+        footer .column a { color: #333; }
+        @media screen and (max-width: 600px) {
+            footer .row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky Shrinking Header -->
+    <div class="sticky-header" id="stickyHeader">
+        <div class="company-title" id="companyTitle">BEACON ENTERPRISE</div>
+        <div class="menu-btn-wrapper">
+            <button class="openbtn" id="mainMenuBtn" onclick="openNav()">☰ Menu</button>
+        </div>
+        <div class="marquee-wrapper" id="marqueeWrapper">
+            <marquee>
+                <p>For trade related enquiries and assistance please contact Abhishek M.</p>
+            </marquee>
+        </div>
+    </div>
+    <div class="sticky-spacer"></div>
+
+    <!-- Header image slider -->
+    <div id="header">
+        <img class="header-image" src="https://scontent.fccu25-1.fna.fbcdn.net/v/t39.30808-6/393617735_306199395495650_5533541031735564184_n.jpg?stp=dst-jpg_p180x540&_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=DmKqzZJmJhQAX_uhtjF&_nc_ht=scontent.fccu25-1.fna&oh=00_AfCQwmIreBRUiZ71d1NxN1JOmIcNtrRzcetrmVL2QO_cCQ&oe=6549BACD" alt="Image 1">
+        <img class="header-image" src="https://scontent.fccu25-1.fna.fbcdn.net/v/t39.30808-6/397221254_313976674717922_639488858623785204_n.jpg?stp=dst-jpg_p180x540&_nc_cat=102&ccb=1-7&_nc_sid=5f2048&_nc_ohc=daetJAy4PKoAX9w75s5&_nc_ht=scontent.fccu25-1.fna&oh=00_AfDmsaB02W40XU3bgU3NqejfJStC2gZ7Ggn-fWtdkOaM9A&oe=6543C52B" alt="Image 2">
+        <img class="header-image" src="https://scontent.fccu4-2.fna.fbcdn.net/v/t39.30808-6/393513010_306222532160003_7351604151121560707_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=5f2048&_nc_ohc=8bvXMP6IhScAX-5_Onv&_nc_ht=scontent.fccu4-2.fna&oh=00_AfCVrqG6SKp1_WkDKSBz5AstB1UiaCnnvnvE-my0DC63cQ&oe=6532CCC0" alt="Image 3">
+    </div>
+    <script>
+        // Shrinking header on scroll
+        window.addEventListener('scroll', function() {
+            const title = document.getElementById('companyTitle');
+            const btn = document.getElementById('mainMenuBtn');
+            const marquee = document.getElementById('marqueeWrapper');
+            if (window.scrollY > 40) {
+                title.classList.add('small');
+                btn.classList.add('shrink');
+                marquee.classList.add('hide');
+            } else {
+                title.classList.remove('small');
+                btn.classList.remove('shrink');
+                marquee.classList.remove('hide');
+            }
+        });
+        // Image slider
+        let currentImageIndex = 0;
+        const headerImages = document.querySelectorAll(".header-image");
+        function showNextImage() {
+            headerImages[currentImageIndex].style.display = "none";
+            currentImageIndex = (currentImageIndex + 1) % headerImages.length;
+            headerImages[currentImageIndex].style.display = "block";
+        }
+        headerImages[currentImageIndex].style.display = "block";
+        setInterval(showNextImage, 3000);
+        // Side panel
+        function openNav() { document.getElementById("mySidepanel").style.width = "250px"; }
+        function closeNav() { document.getElementById("mySidepanel").style.width = "0"; }
+    </script>
+    <!-- STICKY HERO SECTION -->
+    <!-- Moved sidepanel outside sticky-header for proper overlay and closing cross accessibility -->
+    <div id="mySidepanel" class="sidepanel">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="#">Journey</a>
+        <a href="#">A N Manna Foundations</a>
+        <a href="#">Beacon's manufacturing Unit - BMEE</a>
+        <a href="#">*coming soon* - Realestate_Company</a>
+        <a href="#">*coming soon* - Transport_n_Logistics</a>
+        <a href="#">Grieveances</a>
+    </div>
+
+    <!-- Main Navigation Dropdown -->
+    <nav class="menu">
+        <div class="dropdown">
+            <button class="dropdown-button">Company</button>
+            <div class="dropdown-content">
+                <li><a href="#">Mission</a></li>
+                <li><a href="#">Vision</a></li>
+                <li><a href="#">Values</a></li>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropdown-button">Businesses</button>
+            <div class="dropdown-content">
+                <li><a href="#">Project</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Sustainability</a></li>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropdown-button">Impact</button>
+            <div class="dropdown-content">
+                <li><a href="#">News & Media</a></li>
+                <li><a href="#">CSR activities</a></li>
+                <li><a href="#">Leadership Goals</a></li>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropdown-button">Carrers</button>
+            <div class="dropdown-content">
+                <li><a href="#">Internship-Industrial visits</a></li>
+                <li><a href="#">Apprenticeship- onsite Training</a></li>
+                <li><a href="#">Oppertunities</a></li>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropdown-button">Contact Us</button>
+            <div class="dropdown-content">
+                <li><a href="#">Location</a></li>
+            </div>
+        </div>
+    </nav>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <h2>About Us</h2>
+        <q>A leading Electrical Engineering company committed to excellence in delivering cutting-edge solutions. Deals in contractual PSUs, Central & State government Electrical projects.</q>
+        <q>Firm related to Electrical Engineers & Government Licensed Electrical Contractors. Performs Oil filtration, Testing and Erection of Power Transformers, with proper approval from DOE West Bengal authorities, provides Installation & Maintenance of all sorts of H.T. & L.T. Electrical Equipments, S/STN. & various types of Illuminations and other Electrical Contractual works.</q>
+        <div class="project">
+            <img src="project1.jpg" alt="Project 1">
+            <h3>Engineering projects and Infrastructure Development</h3>
+            <p></p>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <div class="main">
+        <h2>Services</h2>
+        <hr>
+        <p>Currently we are serving Indian railways (Eastern-Sealdah Division) Both TRD & ELEG/G. Besides we are performing several Annual Maintenance works under West Bengal government Housing Dept.
+        We have with us Engineers, Skilled Technicians and Proper Electrical Equipments to troubleshoot any problems within stipulated period of time.</p>
+        <a href="#about" class="btn">Download Brochure</a>
+        <!-- Portfolio Gallery Grid -->
+        <div class="row">
+            <div class="column">
+                <div class="content">
+                    <img src="/w3images/mountains.jpg" alt="Mountains" style="width:100%">
+                    <h3>Engineering and Industrial Solutions</h3>
+                    <p>Our core services deals in Electrical Installation, Maintenance. Including HT    LT substation works</p>
+                    <p class="read-more-content">abcdef.</p>
+                    <button class="read-more-button" onclick="toggleReadMore(this)">Read More</button>
+                </div>
+            </div>
+            <div class="column">
+                <div class="content">
+                    <img src="/w3images/lights.jpg" alt="Lights" style="width:100%">
+                    <h3>Projects and Infrastructure Development</h3>
+                    <p>our new venture deals in Civil constructions, structural Engineering, Surveying</p>
+                    <p class="read-more-content">abcdef.</p>
+                    <button class="read-more-button" onclick="toggleReadMore(this)">Read More</button>
+                </div>
+            </div>
+            <div class="column">
+                <div class="content">
+                    <img src="/w3images/nature.jpg" alt="Nature" style="width:100%">
+                    <h3>Automation & Innovation</h3>
+                    <p>Our Global Outreach providing Interior Automation with Architectural Design and energy efficiency... </p>
+                    <p class="read-more-content">21st century witnessed various AI controlled Home automation with sophisticated Electronic gadgets which remotely controls all your home appliances smartly, even when u r not at home; provided with proper switchgears to safeguard their effective operation.</p>
+                    <button class="read-more-button" onclick="toggleReadMore(this)">Read More</button>
+                </div>
+            </div>
+            <div class="column">
+                <div class="content">
+                    <img src="/w3images/mountains.jpg" alt="Mountains" style="width:100%">
+                    <h3>Renewables</h3>
+                    <p>Providing sustainable energy sources similar to UK and European Union model, who are among the world’s largest renewable energy markets   </p>
+                    <p class="read-more-content">Your workplace should never run out of power, be equipped with alternative sources of energy.</p>
+                    <button class="read-more-button" onclick="toggleReadMore(this)">Read More</button>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <img src="/w3images/p3.jpg" alt="Bear" style="width:100%">
+            <h3>Workshop & Laboratories</h3>
+            <p> NABL accredited labs. Electrical megger calibration; Transformer Oil testing. </p>
+            <p class="read-more-content">Besides this we are expanding our horizon and venturing into various civil soil and projects related testing mechanisms</p>
+            <button class="read-more-button" onclick="toggleReadMore(this)">Read More</button>
+        </div>
+        <script>
+        // Only one 'Read More' open at a time
+        document.querySelectorAll('.read-more-button').forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Close all open read-more-content except this one
+                document.querySelectorAll('.read-more-content').forEach(function(content) {
+                    if (content !== button.previousElementSibling) {
+                        content.style.display = 'none';
+                    }
+                });
+                document.querySelectorAll('.read-more-button').forEach(function(btn) {
+                    if (btn !== button) btn.classList.remove('active');
+                });
+                // Toggle this content
+                const readMoreContent = button.previousElementSibling;
+                if (readMoreContent.style.display === "block") {
+                    readMoreContent.style.display = "none";
+                    button.textContent = "Read More";
+                    button.classList.remove('active');
+                } else {
+                    readMoreContent.style.display = "block";
+                    button.textContent = "Read Less";
+                    button.classList.add('active');
+                }
+            });
+        });
+        </script>
+    </div>
+
+    <!-- Projects Section -->
+    <section class="projects">
+        <h2>Community Outreach</h2>
+        <h3>We are also committed to sustainable development goals.</h3>
+        <div class="scrolling-text">
+            <table border="0" bordercolor="#ffffff" style="margin: 0px auto;">
+                <tr>
+                    <th><a href="Waste Management.html">Waste Management</a></th>
+                    <th><a href="Plantation Drive.html">Plantation Drive</a></th>
+                    <th><a href="Social Donation.html">Social Donation</a></th>
+                    <th><a href="Awareness.html">Awareness</a></th>
+                    <th><a href="R.html">Religious activities</a></th>                  
+                </tr>
+                <tr>
+                    <td> <img src="project1.jpg" alt="Project 1"></td>
+                    <td> <img src="project1.jpg" alt="Project 2"></td>
+                    <td> <img src="project1.jpg" alt="Project 3"></td>
+                    <td> <img src="project1.jpg" alt="Project 4"></td>
+                    <td> <img src="project1.jpg" alt="Project 5"></td>
+                </tr>
+                <tr>
+                    <td> Details about Project 1.</td>
+                    <td> Details about Project 2.</td>
+                    <td> Details about Project 3.</td>
+                    <td> Details about Project 4.</td>
+                    <td> Details about Project 5.</td>
+                </tr>
+                <tr>
+                    <td>3, Cell 1</td>
+                    <td>3, Contact us</td>
+                    <td>3, Cell 3</td>
+                    <td>1, Cell 3</td>
+                    <td>1, Cell 3</td>
+                </tr>  
+            </table>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="row">
+            <div class="column" style="background-color:#aef;">
+                <p>Quotes: famous quotes</p>
+                <q>Disclaimer:</q>
+                <p>The website is handcrafted by me, Abhishek Manna. This Website might seem odd and old school but it's my first time writing HTML code; it provides all the necessary and relevant information.</p>
+            </div>
+            <div class="column" style="background-color:#fef;">
+                <p>logo</p>
+                <p>Beacon Enterprises</p>
+                <p>tagline..tagline</p>
+                <p>Visit our Social Media Platforms</p>
+                <a href="#" class="fa fa-facebook"></a>
+                <a href="#" class="fa fa-twitter"></a>
+                <a href="#" class="fa fa-linkedin"></a>
+                <a href="#" class="fa fa-instagram"></a>
+            </div>
+            <div class="column" style="background-color:#aef;">
+                <p>Quick Links</p>
+                <p>Raise your Queries or need assistance? Feel free to click any of the link below and get in touch with us.
+                </p>
+                <ul>
+                    <li><a href="https://web.whatsapp.com/send/?phone=919433212395">Whats App</a></li>
+                    <li><a href="mailto:www.manna.beacon@gmail.com?">Email Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="text-align:center; padding-top:10px;">
+            &copy; Website Edited-2023 Beacon Enterprise. All rights reserved.<br>
+            Privacy Policy ~ Legal disclaimer
+        </div>
+    </footer>
+</body>
+</html>
